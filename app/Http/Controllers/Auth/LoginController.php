@@ -25,7 +25,7 @@ class LoginController extends Controller
     public function logout(Request $request)
     {
         $user = $request->user();
-        
+
         if ($user) {
             $user->tokens()->delete(); // Удаляем все токены пользователя
             return response()->json(['message' => 'Вы вышли из системы'], 200);

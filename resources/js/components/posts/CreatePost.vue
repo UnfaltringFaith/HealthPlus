@@ -91,14 +91,13 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+const selectedFile = ref(null)
 
 // Форма для создания поста
 const form = reactive({
     title: '',
-    excerpt: '',
     content: '',
     category: '',
-    tags: '',
     status: 'draft'
 })
 
@@ -111,29 +110,32 @@ const createPost = async () => {
 
     try {
         // Подготовка данных для отправки
-        const postData = {
-            ...form,
-            tags: form.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-            status: 'published'
+        const postData = new FormData();
+        for (const key in form) {
+            postData.append(key, form[key])
         }
+        postData.append('image', selectedFile.value);
+        postData.append('tags[]', form.tags.split(',').map(tag => tag.trim()).filter(tag => tag));
 
+        console.log('Создание поста:', postData)
         // Здесь будет API-запрос к Laravel
-        // const response = await fetch('/api/posts', {
-        //   method: 'POST',
-        //   headers: {
-        //     'Content-Type': 'application/json',
-        //     'Accept': 'application/json'
-        //   },
-        //   body: JSON.stringify(postData)
-        // })
+
+        const response = await axios.post('/api/posts', postData, {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            }
+        })
+
+        console.log('Пост успешно создан:', response.data);
+        
 
         // Временная имитация успешного сохранения
         await new Promise(resolve => setTimeout(resolve, 1000))
 
-        console.log('Создание поста:', postData)
 
         // Перенаправление на страницу постов после успешного создания
-        router.push('/posts')
+        router.push(`/posts/${response.data.id}`)
 
     } catch (error) {
         console.error('Ошибка при создании поста:', error)
@@ -147,5 +149,10 @@ const createPost = async () => {
 const saveDraft = async () => {
     form.status = 'draft'
     await createPost()
+}
+
+function onFileChange(event){
+    selectedFile.value = event.target.files[0]
+    console.log('Выбранный файл:', selectedFile.value);
 }
 </script>

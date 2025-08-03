@@ -5,14 +5,44 @@ import { useRouter } from 'vue-router';
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         isAuthenticated: !!localStorage.getItem('auth_token'),
-        user: JSON.parse(localStorage.getItem('user') || 'null'),
+        user: null,
     }),
     actions: {
         // Инициализация - только если нет данных пользователя
         async init() {
-            if (this.isAuthenticated && !this.user) {
-                await this.fetchUser();
+            if (this.isAuthenticated) {
+                const isValid = await this.validateToken();
+                if (!isValid) {
+                    this.clearAuth();
+                }
+                else{
+                    await this.fetchUser();
+                }
             }
+
+            console.log("LOG USERA", this.user);
+            
+        },
+        async validateToken() {
+            console.log('validateToken ZZZZZZZZZZZZZZZZZ');
+            try {
+                const response = await axios.get('/api/user', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                    }
+                });
+
+                return response.status === 200;
+            }
+            catch(error){
+                return false;
+            }
+        },
+        async clearAuth(){
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            this.isAuthenticated = false;
+            this.user = null;
         },
         async login({ email, password }) {
             const response = await axios.post('/api/login', {
@@ -51,7 +81,7 @@ export const useAuthStore = defineStore('auth', {
         },
         async fetchUser() {
             if (!localStorage.getItem('auth_token')) return null;
-            
+
             try {
                 const response = await axios.get('/api/user', {
                     headers: {
@@ -61,7 +91,6 @@ export const useAuthStore = defineStore('auth', {
 
                 if (response.status === 200) {
                     this.user = response.data; // Сохраняем в state
-                    localStorage.setItem('user', JSON.stringify(response.data)); // Сохраняем в localStorage
                     return response.data;
                 }
             } catch (error) {

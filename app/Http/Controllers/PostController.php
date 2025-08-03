@@ -19,6 +19,7 @@ class PostController extends Controller
     public function show(Post $post)
     {
         $post->load('user');
+
         return response()->json($post);
     }
 
@@ -44,6 +45,37 @@ class PostController extends Controller
             'tags' => 'nullable|array',
         ]);
 
-        
+        if($request->hasFile('image')){
+            $path = $request->file('image')->store('images/posts', 'public');
+            $post['image'] = $path;
+        }
+
+        $createdPost = Post::create([
+            'title' => $post['title'],
+            'content' => $post['content'],
+            'user_id' => $request->user()->id, // Associate the post with the authenticated user
+            'category' => $post['category'],
+            'image' => $post['image'] ?? null,
+            'status' => $post['status'] ?? 'draft',
+            'tags' => json_encode($post['tags'] ?? []),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Post created successfully', 'post_id' => $createdPost->id], 201);
+    }
+
+    public function like(Post $post)
+    {
+        $post->increment('rating'); // Increment the rating for the post
+        // Logic to like a post
+        return response()->json(['message' => 'Post liked successfully', 'rating' => $post->rating]);
+    }
+
+    public function dislike(Post $post)
+    {
+        $post->increment('rating', -1); // Decrement the rating for the post
+        // Logic to dislike a post
+        return response()->json(['message' => 'Post disliked successfully', 'rating' => $post->rating]);
     }
 }

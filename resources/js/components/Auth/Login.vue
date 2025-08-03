@@ -19,7 +19,8 @@
                     <label for="email" class="block text-sm font-medium text-gray-700">
                         Email адрес
                     </label>
-                    <input v-model="credentials.email" id="email" name="email" type="email" autocomplete="email" required
+                    <input v-model="credentials.email" id="email" name="email" type="email" autocomplete="email"
+                        required
                         class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                         placeholder="Введите ваш email" />
                 </div>
@@ -29,7 +30,8 @@
                     <label for="password" class="block text-sm font-medium text-gray-700">
                         Пароль
                     </label>
-                    <input v-model="credentials.password" id="password" name="password" type="password" autocomplete="current-password" required
+                    <input v-model="credentials.password" id="password" name="password" type="password"
+                        autocomplete="current-password" required
                         class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                         placeholder="Введите пароль" />
                 </div>
@@ -112,30 +114,30 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue';
-import { useAuthStore } from '../../Store/auth';
-import { useRouter } from 'vue-router';
+import { reactive } from "vue";
+import { useAuthStore } from "../../Store/auth";
+import { useRouter } from "vue-router";
 
 const authStore = useAuthStore();
 const router = useRouter();
 
 const credentials = reactive({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
 });
 
 const login = async () => {
     try {
         await authStore.login({
             email: credentials.email,
-            password: credentials.password
+            password: credentials.password,
         });
 
-        router.push('/');  // Redirect to home after successful login
+        router.push("/"); // Redirect to home after successful login
 
         // Редирект или другие действия после успешного входа
     } catch (error) {
-        console.error('Ошибка входа:', error);
+        console.error("Ошибка входа:", error);
     }
 };
 </script>
